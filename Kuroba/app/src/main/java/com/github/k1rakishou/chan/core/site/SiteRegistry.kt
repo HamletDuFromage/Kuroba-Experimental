@@ -41,6 +41,7 @@ import com.github.k1rakishou.chan.core.site.sites.lainchan.Lainchan
 import com.github.k1rakishou.chan.core.site.sites.lynxchan.Endchan
 import com.github.k1rakishou.chan.core.site.sites.lynxchan.Kohlchan
 import com.github.k1rakishou.chan.core.site.sites.lynxchan.YesHoney
+import com.github.k1rakishou.chan.core.site.sites.Soyjakparty
 import com.github.k1rakishou.model.data.descriptor.SiteDescriptor
 
 /**
@@ -74,6 +75,7 @@ object SiteRegistry {
     siteClasses.addSiteToSiteClassesMap(Endchan.SITE_NAME, Endchan::class.java)
     siteClasses.addSiteToSiteClassesMap(Kohlchan.SITE_NAME, Kohlchan::class.java)
     siteClasses.addSiteToSiteClassesMap(RozenArcana.SITE_NAME, RozenArcana::class.java)
+    siteClasses.addSiteToSiteClassesMap(Soyjakparty.SITE_NAME, Soyjakparty::class.java)
     siteClasses.addSiteToSiteClassesMap(YesHoney.SITE_NAME, YesHoney::class.java)
 
     // A synthetic site which only purpose is to have an order in the global site order for composed

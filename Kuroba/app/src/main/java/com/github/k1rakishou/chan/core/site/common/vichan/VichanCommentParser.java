@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 
 public class VichanCommentParser extends CommentParser implements ICommentParser {
     private static final Pattern QUOTE_PATTERN = Pattern.compile("#(\\d+)");
-    private static final Pattern FULL_QUOTE_PATTERN = Pattern.compile("/(\\w+)/\\w+/(\\d+)\\.html#(\\d+)");
+    private static final Pattern FULL_QUOTE_PATTERN = Pattern.compile("/+(\\w+)/+\\w+/+(\\d+)\\.html#(\\d+)");
 
     public VichanCommentParser() {
         addDefaultRules();
