@@ -2,13 +2,18 @@ package com.github.k1rakishou.chan.features.bypass
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.webkit.ConsoleMessage
 import android.webkit.CookieManager
+import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewDatabase
+import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.updateLayoutParams
 import com.github.k1rakishou.chan.R
 import com.github.k1rakishou.chan.core.di.component.activity.ActivityComponent
 import com.github.k1rakishou.chan.core.site.SiteResolver
@@ -17,12 +22,15 @@ import com.github.k1rakishou.chan.ui.controller.BaseFloatingController
 import com.github.k1rakishou.chan.ui.theme.widget.ColorizableButton
 import com.github.k1rakishou.common.AppConstants
 import com.github.k1rakishou.common.FirewallType
+import com.github.k1rakishou.common.domain
 import com.github.k1rakishou.common.errorMessageOrClassName
 import com.github.k1rakishou.core_logger.Logger
+import com.github.k1rakishou.prefs.MapSetting
 import com.github.k1rakishou.prefs.StringSetting
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import javax.inject.Inject
 
 class SiteFirewallBypassController(
@@ -87,6 +95,8 @@ class SiteFirewallBypassController(
         // Some users may have no WebView installed
         onCreateInternal()
       } catch (error: Throwable) {
+        Logger.e(TAG, "Error when trying to create the view", error)
+
         onResult(CookieResult.Error(BypassException(error.errorMessageOrClassName())))
         pop()
       }
@@ -97,7 +107,10 @@ class SiteFirewallBypassController(
     super.onDestroy()
 
     webClient.destroy()
-    webView.stopLoading()
+
+    if (::webView.isInitialized) {
+      webView.stopLoading()
+    }
 
     if (!cookieResultCompletableDeferred.isCompleted) {
       cookieResultCompletableDeferred.complete(CookieResult.Canceled)
@@ -107,7 +120,19 @@ class SiteFirewallBypassController(
 
   @SuppressLint("SetJavaScriptEnabled")
   private fun onCreateInternal() {
-    webView = view.findViewById(R.id.web_view)
+    val webViewContainer = view.findViewById<FrameLayout>(R.id.web_view_container)
+
+    webView = WebView(context, null, android.R.attr.webViewStyle).apply {
+      layoutParams = FrameLayout.LayoutParams(
+        FrameLayout.LayoutParams.MATCH_PARENT,
+        FrameLayout.LayoutParams.MATCH_PARENT
+      )
+
+      isClickable = false
+      isFocusable = false
+    }
+
+    webViewContainer.addView(webView)
 
     val clickableArea = view.findViewById<ConstraintLayout>(R.id.clickable_area)
     clickableArea.setOnClickListener { pop() }
@@ -134,12 +159,12 @@ class SiteFirewallBypassController(
 
     val webSettings: WebSettings = webView.settings
     webSettings.javaScriptEnabled = true
-    webSettings.useWideViewPort = true
-    webSettings.loadWithOverviewMode = true
-    webSettings.userAgentString = appConstants.userAgent
-    webSettings.cacheMode = WebSettings.LOAD_NO_CACHE
     webSettings.domStorageEnabled = true
     webSettings.databaseEnabled = true
+    webSettings.useWideViewPort = true
+    webSettings.loadWithOverviewMode = true
+    webSettings.cacheMode = WebSettings.LOAD_DEFAULT
+    webSettings.userAgentString = appConstants.userAgent
 
     webView.webViewClient = webClient
     webView.loadUrl(urlToOpen)
@@ -191,7 +216,7 @@ class SiteFirewallBypassController(
 
     when (firewallType) {
       FirewallType.Cloudflare -> {
-        val cloudFlareClearanceCookieSetting = site.getSettingBySettingId<StringSetting>(
+        val cloudFlareClearanceCookieSetting = site.getSettingBySettingId<MapSetting>(
           SiteSetting.SiteSettingId.CloudFlareClearanceCookie
         )
 
@@ -200,7 +225,16 @@ class SiteFirewallBypassController(
           return false
         }
 
-        cloudFlareClearanceCookieSetting.set(cookie)
+        val domainOrHost = urlToOpen.toHttpUrlOrNull()?.let { httpUrl ->
+          httpUrl.domain() ?: httpUrl.host
+        }
+
+        if (domainOrHost.isNullOrEmpty()) {
+          Logger.e(TAG, "Failed to extract neither domain not host from url '${urlToOpen}'")
+          return false
+        }
+
+        cloudFlareClearanceCookieSetting.put(domainOrHost, cookie)
       }
       FirewallType.DvachAntiSpam -> {
         val dvachAntiSpamCookieSetting = site.getSettingBySettingId<StringSetting>(

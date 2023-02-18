@@ -20,6 +20,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.os.RemoteException
 import android.text.Spanned
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -146,19 +147,18 @@ class ReplyInputEditText @JvmOverloads constructor(
 //        at androidx.emoji2.text.SpannableBuilder.setSpan(SpannableBuilder.java:4)
 //        at android.widget.Editor$SuggestionsPopupWindow.updateSuggestions(Editor.java:4173)
 //        at android.widget.Editor$SuggestionsPopupWindow.show(Editor.java:4039)
+      Logger.e(TAG, "Caught Throwable in onTouchEvent() msg: ${error.errorMessageOrClassName()}")
       return false
     }
   }
 
-  override fun postDelayed(action: Runnable, delayMillis: Long): Boolean {
-//      java.lang.IndexOutOfBoundsException: setSpan (109 ... 480) ends beyond length 109
-//        at android.text.SpannableStringBuilder.checkRange(SpannableStringBuilder.java:1326)
-//        at android.text.SpannableStringBuilder.setSpan(SpannableStringBuilder.java:685)
-//        at android.text.SpannableStringBuilder.setSpan(SpannableStringBuilder.java:677)
-//        at androidx.emoji2.text.SpannableBuilder.setSpan(SpannableBuilder.java:4)
-//        at android.widget.Editor$SuggestionsPopupWindow.updateSuggestions(Editor.java:4173)
-//        at android.widget.Editor$SuggestionsPopupWindow.show(Editor.java:4039)
-    return super.postDelayed(SafeRunnableWrapper(action), delayMillis)
+  override fun performClick(): Boolean {
+    try {
+      return super.performClick()
+    } catch (error: RemoteException) {
+      Logger.e(TAG, "Caught RemoteException in performClick() msg: ${error.errorMessageOrClassName()}")
+      return false
+    }
   }
 
   override fun onTextContextMenuItem(id: Int): Boolean {
@@ -321,24 +321,86 @@ class ReplyInputEditText @JvmOverloads constructor(
     override fun deleteSurroundingText(beforeLength: Int, afterLength: Int): Boolean {
       return try {
         super.deleteSurroundingText(beforeLength, afterLength)
-      } catch (error: IndexOutOfBoundsException) {
+      } catch (error: Throwable) {
         // java.lang.IndexOutOfBoundsException: replace (0 ... -1) has end before start in
         // androidx.emoji2.viewsintegration.EmojiInputConnection
-        Logger.e(TAG, "Caught IndexOutOfBoundsException in deleteSurroundingText() msg: ${error.errorMessageOrClassName()}")
+        Logger.e(TAG, "Caught Throwable in deleteSurroundingText() msg: ${error.errorMessageOrClassName()}")
         return false
       }
     }
 
-  }
-
-  private class SafeRunnableWrapper(
-    private val runnable: Runnable
-  ) : Runnable {
-    override fun run() {
+    override fun commitText(text: CharSequence?, newCursorPosition: Int): Boolean {
       try {
-        runnable.run()
+        return super.commitText(text, newCursorPosition)
       } catch (error: Throwable) {
-        Logger.e(TAG, "runnable.run() crashed with error ${error.errorMessageOrClassName()}")
+        // java.lang.RuntimeException: android.os.TransactionTooLargeException: data parcel size 591468 bytes
+        // 	  at android.view.autofill.AutofillManager.updateSessionLocked(AutofillManager.java:2184)
+        // 	  at android.view.autofill.AutofillManager.notifyValueChanged(AutofillManager.java:1583)
+        // 	  at android.widget.TextView.notifyListeningManagersAfterTextChanged(TextView.java:11935)
+        // 	  at android.widget.TextView.sendAfterTextChanged(TextView.java:11915)
+        // 	  at android.widget.TextView$ChangeWatcher.afterTextChanged(TextView.java:15283)
+        // 	  at android.text.SpannableStringBuilder.sendAfterTextChanged(SpannableStringBuilder.java:1291)
+        // 	  at android.text.SpannableStringBuilder.replace(SpannableStringBuilder.java:591)
+        // 	  at androidx.emoji2.text.SpannableBuilder.replace(SpannableBuilder.java:11)
+        // 	  at android.text.SpannableStringBuilder.replace(SpannableStringBuilder.java:521)
+        // 	  at androidx.emoji2.text.SpannableBuilder.replace(SpannableBuilder.java:2)
+        // 	  at android.view.inputmethod.BaseInputConnection.replaceText(BaseInputConnection.java:945)
+        // 	  at android.view.inputmethod.BaseInputConnection.commitText(BaseInputConnection.java:219)
+        // 	  at com.android.internal.inputmethod.EditableInputConnection.commitText(EditableInputConnection.java:201)
+        // 	  at android.view.inputmethod.InputConnectionWrapper.commitText(InputConnectionWrapper.java:200)
+        // 	  at android.view.inputmethod.InputConnectionWrapper.commitText(InputConnectionWrapper.java:200)
+        // 	  at android.view.inputmethod.InputConnectionWrapper.commitText(InputConnectionWrapper.java:200)
+        // 	  at com.android.internal.inputmethod.RemoteInputConnectionImpl.lambda$commitText$16$com-android-internal-inputmethod-RemoteInputConnectionImpl(RemoteInputConnectionImpl.java:569)
+        // 	  at com.android.internal.inputmethod.RemoteInputConnectionImpl$$ExternalSyntheticLambda34.run(Unknown Source:8)
+        //
+        // android.os.DeadSystemRuntimeException: android.os.DeadSystemException
+        //	  at android.view.autofill.AutofillManager.updateSessionLocked(AutofillManager.java:2184)
+        //	  at android.view.autofill.AutofillManager.notifyValueChanged(AutofillManager.java:1583)
+        //	  at android.widget.TextView.notifyListeningManagersAfterTextChanged(TextView.java:11935)
+        //	  at android.widget.TextView.sendAfterTextChanged(TextView.java:11915)
+        //	  at android.widget.TextView$ChangeWatcher.afterTextChanged(TextView.java:15283)
+        //	  at android.text.SpannableStringBuilder.sendAfterTextChanged(SpannableStringBuilder.java:1291)
+        //	  at android.text.SpannableStringBuilder.replace(SpannableStringBuilder.java:591)
+        //	  at androidx.emoji2.text.SpannableBuilder.replace(SpannableBuilder.java:11)
+        //	  at android.text.SpannableStringBuilder.replace(SpannableStringBuilder.java:521)
+        //	  at androidx.emoji2.text.SpannableBuilder.replace(SpannableBuilder.java:2)
+        //	  at android.view.inputmethod.BaseInputConnection.replaceText(BaseInputConnection.java:945)
+        //	  at android.view.inputmethod.BaseInputConnection.commitText(BaseInputConnection.java:219)
+        //	  at com.android.internal.inputmethod.EditableInputConnection.commitText(EditableInputConnection.java:201)
+        //	  at android.view.inputmethod.InputConnectionWrapper.commitText(InputConnectionWrapper.java:200)
+        //	  at android.view.inputmethod.InputConnectionWrapper.commitText(InputConnectionWrapper.java:200)
+        //	  at android.view.inputmethod.InputConnectionWrapper.commitText(InputConnectionWrapper.java:200)
+        //	  at com.android.internal.inputmethod.RemoteInputConnectionImpl.lambda$commitText$16$com-android-internal-inputmethod-RemoteInputConnectionImpl(RemoteInputConnectionImpl.java:569)
+        //	  at com.android.internal.inputmethod.RemoteInputConnectionImpl$$ExternalSyntheticLambda34.run(Unknown Source:8)
+        Logger.e(TAG, "Caught Throwable in commitText() msg: ${error.errorMessageOrClassName()}")
+        return false
+      }
+    }
+
+    override fun setComposingText(text: CharSequence?, newCursorPosition: Int): Boolean {
+      try {
+        return super.setComposingText(text, newCursorPosition)
+      } catch (error: RemoteException) {
+//        android.os.DeadSystemRuntimeException: android.os.DeadSystemException
+//          at android.view.autofill.AutofillManager.updateSessionLocked(AutofillManager.java:2184)
+//          at android.view.autofill.AutofillManager.notifyValueChanged(AutofillManager.java:1583)
+//          at android.widget.TextView.notifyListeningManagersAfterTextChanged(TextView.java:11935)
+//          at android.widget.TextView.sendAfterTextChanged(TextView.java:11915)
+//          at android.widget.TextView$ChangeWatcher.afterTextChanged(TextView.java:15283)
+//          at android.text.SpannableStringBuilder.sendAfterTextChanged(SpannableStringBuilder.java:1291)
+//          at android.text.SpannableStringBuilder.replace(SpannableStringBuilder.java:591)
+//          at androidx.emoji2.text.SpannableBuilder.replace(SpannableBuilder.java:11)
+//          at android.text.SpannableStringBuilder.replace(SpannableStringBuilder.java:521)
+//          at androidx.emoji2.text.SpannableBuilder.replace(SpannableBuilder.java:2)
+//          at android.view.inputmethod.BaseInputConnection.replaceText(BaseInputConnection.java:945)
+//          at android.view.inputmethod.BaseInputConnection.setComposingText(BaseInputConnection.java:712)
+//          at android.view.inputmethod.InputConnectionWrapper.setComposingText(InputConnectionWrapper.java:154)
+//          at android.view.inputmethod.InputConnectionWrapper.setComposingText(InputConnectionWrapper.java:154)
+//          at android.view.inputmethod.InputConnectionWrapper.setComposingText(InputConnectionWrapper.java:154)
+//          at com.android.internal.inputmethod.RemoteInputConnectionImpl.lambda$setComposingText$25$com-android-internal-inputmethod-RemoteInputConnectionImpl(RemoteInputConnectionImpl.java:724)
+//          at com.android.internal.inputmethod.RemoteInputConnectionImpl$$ExternalSyntheticLambda19.run(Unknown Source:8)
+        Logger.e(TAG, "Caught RemoteException in setComposingText() msg: ${error.errorMessageOrClassName()}")
+        return false
       }
     }
   }

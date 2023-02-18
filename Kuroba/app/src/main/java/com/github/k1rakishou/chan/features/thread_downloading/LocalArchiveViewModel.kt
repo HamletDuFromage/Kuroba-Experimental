@@ -235,10 +235,10 @@ class LocalArchiveViewModel : BaseViewModel() {
     val itemsList = mutableListOf<BottomMenuPanelItem>()
 
     itemsList += BottomMenuPanelItem(
-      ArchiveMenuItemId(MenuItemType.Delete),
-      R.drawable.ic_baseline_delete_outline_24,
-      R.string.bottom_menu_item_delete,
-      {
+      menuItemId = ArchiveMenuItemId(MenuItemType.Delete),
+      iconResId = R.drawable.ic_baseline_delete_outline_24,
+      textResId = R.string.bottom_menu_item_delete,
+      onClickListener = {
         val clickEvent = MenuItemClickEvent(
           menuItemType = MenuItemType.Delete,
           items = viewModelSelectionHelper.getCurrentlySelectedItems()
@@ -251,10 +251,10 @@ class LocalArchiveViewModel : BaseViewModel() {
 
     if (availableActions.canStop) {
       itemsList += BottomMenuPanelItem(
-        ArchiveMenuItemId(MenuItemType.Stop),
-        R.drawable.ic_baseline_stop_24,
-        R.string.bottom_menu_item_stop,
-        {
+        menuItemId = ArchiveMenuItemId(MenuItemType.Stop),
+        iconResId = R.drawable.ic_baseline_stop_24,
+        textResId = R.string.bottom_menu_item_stop,
+        onClickListener = {
           val clickEvent = MenuItemClickEvent(
             menuItemType = MenuItemType.Stop,
             items = viewModelSelectionHelper.getCurrentlySelectedItems()
@@ -268,10 +268,10 @@ class LocalArchiveViewModel : BaseViewModel() {
 
     if (availableActions.canStart) {
       itemsList += BottomMenuPanelItem(
-        ArchiveMenuItemId(MenuItemType.Start),
-        R.drawable.ic_file_download_white_24dp,
-        R.string.bottom_menu_item_start,
-        {
+        menuItemId = ArchiveMenuItemId(MenuItemType.Start),
+        iconResId = R.drawable.ic_file_download_white_24dp,
+        textResId = R.string.bottom_menu_item_start,
+        onClickListener = {
           val clickEvent = MenuItemClickEvent(
             menuItemType = MenuItemType.Start,
             items = viewModelSelectionHelper.getCurrentlySelectedItems()
@@ -283,22 +283,20 @@ class LocalArchiveViewModel : BaseViewModel() {
       )
     }
 
-    if (currentlySelectedItems.size == 1) {
-      itemsList += BottomMenuPanelItem(
-        ArchiveMenuItemId(MenuItemType.Export),
-        R.drawable.ic_baseline_share_24,
-        R.string.bottom_menu_item_export,
-        {
-          val clickEvent = MenuItemClickEvent(
-            menuItemType = MenuItemType.Export,
-            items = viewModelSelectionHelper.getCurrentlySelectedItems()
-          )
+    itemsList += BottomMenuPanelItem(
+      menuItemId = ArchiveMenuItemId(MenuItemType.Export),
+      iconResId = R.drawable.ic_baseline_share_24,
+      textResId = R.string.bottom_menu_item_export,
+      onClickListener = {
+        val clickEvent = MenuItemClickEvent(
+          menuItemType = MenuItemType.Export,
+          items = viewModelSelectionHelper.getCurrentlySelectedItems()
+        )
 
-          viewModelSelectionHelper.emitBottomPanelMenuItemClickEvent(clickEvent)
-          viewModelSelectionHelper.unselectAll()
-        }
-      )
-    }
+        viewModelSelectionHelper.emitBottomPanelMenuItemClickEvent(clickEvent)
+        viewModelSelectionHelper.unselectAll()
+      }
+    )
 
     return itemsList
   }
@@ -482,23 +480,24 @@ class LocalArchiveViewModel : BaseViewModel() {
     }
   }
 
-  suspend fun exportThreadAsHtml(
-    outputFileUri: Uri,
-    threadDescriptor: ChanDescriptor.ThreadDescriptor
+  suspend fun exportThreadsAsHtml(
+    outputDirUri: Uri,
+    threadDescriptors: List<ChanDescriptor.ThreadDescriptor>,
+    onUpdate: (Int, Int) -> Unit
   ): ModularResult<Unit> {
-    val params = ExportDownloadedThreadAsHtmlUseCase.Params(outputFileUri, threadDescriptor)
+    val params = ExportDownloadedThreadAsHtmlUseCase.Params(outputDirUri, threadDescriptors, onUpdate)
     return exportDownloadedThreadAsHtmlUseCase.execute(params)
-      .peekError { error -> Logger.e(TAG, "exportDownloadedThreadAsHtmlUseCase() error", error) }
+      .peekError { error -> Logger.e(TAG, "exportThreadsAsHtml() error", error) }
   }
 
-  suspend fun exportThreadMedia(
+  suspend fun exportThreadsMedia(
     outputDirectoryUri: Uri,
-    directoryName: String,
-    threadDescriptor: ChanDescriptor.ThreadDescriptor
+    threadDescriptors: List<ChanDescriptor.ThreadDescriptor>,
+    onUpdate: (Int, Int) -> Unit
   ): ModularResult<Unit> {
-    val params = ExportDownloadedThreadMediaUseCase.Params(outputDirectoryUri, directoryName, threadDescriptor)
+    val params = ExportDownloadedThreadMediaUseCase.Params(outputDirectoryUri, threadDescriptors, onUpdate)
     return exportDownloadedThreadMediaUseCase.execute(params)
-      .peekError { error -> Logger.e(TAG, "exportDownloadedThreadMediaUseCase() error", error) }
+      .peekError { error -> Logger.e(TAG, "exportThreadsMedia() error", error) }
   }
 
   enum class ViewMode {

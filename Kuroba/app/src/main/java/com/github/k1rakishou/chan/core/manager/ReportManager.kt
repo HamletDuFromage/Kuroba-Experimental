@@ -12,6 +12,7 @@ import com.github.k1rakishou.chan.core.base.okhttp.ProxiedOkHttpClient
 import com.github.k1rakishou.chan.utils.AppModuleAndroidUtils
 import com.github.k1rakishou.chan.utils.BackgroundUtils
 import com.github.k1rakishou.chan.utils.HashingUtil
+import com.github.k1rakishou.common.AndroidUtils
 import com.github.k1rakishou.common.AppConstants
 import com.github.k1rakishou.common.ModularResult
 import com.github.k1rakishou.common.isNotNullNorEmpty
@@ -127,16 +128,27 @@ class ReportManager(
   }
 
   fun getReportFooter(context: Context): String {
+    val appRunningTime = (((appContext as? Chan)?.appRunningTime) ?: -1L).toString()
+
+    return getReportFooter(context, appRunningTime, appConstants.userAgent)
+  }
+
+  fun getReportFooter(context: Context, appRunningTime: String, userAgent: String): String {
     return buildString(capacity = 2048) {
       appendLine("------------------------------")
       appendLine("Android API Level: " + Build.VERSION.SDK_INT)
       appendLine("App Version: " + BuildConfig.VERSION_NAME)
       appendLine("Phone Model: " + Build.MANUFACTURER + " " + Build.MODEL)
-      appendLine("Build type: " + AppModuleAndroidUtils.getVerifiedBuildType().name)
+
+      if (AppModuleAndroidUtils.getFlavorType() != AndroidUtils.FlavorType.Fdroid) {
+        // Do not log this for FDroid builds since it's always going to be "Unknown" which is confusing
+        appendLine("Build type: " + AppModuleAndroidUtils.getVerifiedBuildType().name)
+      }
+
       appendLine("Flavor type: " + AppModuleAndroidUtils.getFlavorType().name)
       appendLine("isLowRamDevice: ${ChanSettings.isLowRamDevice()}, isLowRamDeviceForced: ${ChanSettings.isLowRamDeviceForced.get()}")
       appendLine("MemoryClass: ${activityManager?.memoryClass}")
-      appendLine("App running time: ${formatAppRunningTime()}")
+      appendLine("App running time: ${appRunningTime}")
       appendLine("System animations state: ${systemAnimationsState(context)}")
       appendLine("------------------------------")
       appendLine("Current layout mode: ${ChanSettings.getCurrentLayoutMode().name}")
@@ -147,7 +159,7 @@ class ReportManager(
       appendLine("mediaViewerMaxOffscreenPages: ${ChanSettings.mediaViewerMaxOffscreenPages.get()}")
       appendLine("CloudFlare force preload enabled: ${ChanSettings.cloudflareForcePreload.get()}")
       appendLine("useMpvVideoPlayer: ${ChanSettings.useMpvVideoPlayer.get()}")
-      appendLine("userAgent: ${appConstants.userAgent}")
+      appendLine("userAgent: ${userAgent}")
       appendLine("kurobaExCustomUserAgent: ${appConstants.kurobaExCustomUserAgent}")
 
       appendLine("maxPostsCountInPostsCache: ${appConstants.maxPostsCountInPostsCache}")
@@ -202,15 +214,6 @@ class ReportManager(
     )
 
     return "duration: ${duration}, transition: ${transition}, window: ${window}"
-  }
-
-  private fun formatAppRunningTime(): String {
-    val time = ((appContext as? Chan)?.appRunningTime) ?: -1L
-    if (time <= 0) {
-      return "Unknown (appContext=${appContext::class.java.simpleName}), time ms: $time"
-    }
-
-    return appRunningTimeFormatter.print(Duration.millis(time).toPeriod())
   }
 
   private suspend fun sendInternal(reportRequest: ReportRequest, issueNumber: Int? = null): ModularResult<Unit> {
@@ -312,18 +315,6 @@ class ReportManager(
     const val MAX_TITLE_LENGTH = 512
     const val MAX_DESCRIPTION_LENGTH = 8192
     const val MAX_LOGS_LENGTH = 65535
-
-    private val appRunningTimeFormatter = PeriodFormatterBuilder()
-      .printZeroAlways()
-      .minimumPrintedDigits(2)
-      .appendHours()
-      .appendSuffix(":")
-      .appendMinutes()
-      .appendSuffix(":")
-      .appendSeconds()
-      .appendSuffix(".")
-      .appendMillis3Digit()
-      .toFormatter()
   }
 
 }

@@ -130,6 +130,8 @@ public class ChanSettings {
     public enum BookmarksSortOrder implements OptionSettingItem {
         CreatedOnAscending("creation_time_asc", true),
         CreatedOnDescending("creation_time_desc", false),
+        ThreadIdAscending("thread_id_asc", true),
+        ThreadIdDescending("thread_id_desc", false),
         UnreadRepliesAscending("replies_ascending", true),
         UnreadRepliesDescending("replies_descending", false),
         UnreadPostsAscending("unread_posts_ascending", true),
@@ -386,7 +388,9 @@ public class ChanSettings {
     public static BooleanSetting showPrefetchLoadingIndicator;
     public static BooleanSetting highResCells;
     public static BooleanSetting useMpvVideoPlayer;
+    public static BooleanSetting mpvUseConfigFile;
     public static BooleanSetting colorizeTextSelectionCursors;
+    public static StringSetting customUserAgent;
     //endregion
 
     //region OTHER
@@ -630,7 +634,9 @@ public class ChanSettings {
             cloudflareForcePreload = new BooleanSetting(provider, "cloudflare_force_preload", false);
             highResCells = new BooleanSetting(provider, "high_res_cells", false);
             useMpvVideoPlayer = new BooleanSetting(provider, "use_mpv_video_player", false);
+            mpvUseConfigFile = new BooleanSetting(provider, "mpv_use_config_file", false);
             colorizeTextSelectionCursors = new BooleanSetting(provider, "colorize_text_selection_cursors", true);
+            customUserAgent = new StringSetting(provider, "custom_user_agent", "");
             //endregion
 
             //region OTHER

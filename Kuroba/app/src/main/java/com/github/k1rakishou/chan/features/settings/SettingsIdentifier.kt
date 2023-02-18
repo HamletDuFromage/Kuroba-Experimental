@@ -718,6 +718,8 @@ sealed class PluginsScreen(
     PluginsScreen(groupIdentifier, SettingIdentifier(settingsId)) {
 
     object UseMpv : MpvPluginGroup("use_mpv")
+    object UseConfigFile : MpvPluginGroup("use_config_file")
+    object EditConfigFile : MpvPluginGroup("edit_config_file")
     object CheckMpvLibsState : MpvPluginGroup("check_mpv_libs_state")
 
     companion object : IGroupIdentifier() {
@@ -792,6 +794,7 @@ sealed class ExperimentalScreen(
     object ShowPrefetchLoadingIndicator : MainSettingsGroup("show_prefetch_loading_indicator")
     object HighResCells : MainSettingsGroup("high_res_cells")
     object ColorizeTextSelectionCursors : MainSettingsGroup("colorize_text_selection_cursors")
+    object CustomUserAgent : MainSettingsGroup("override_user_agent")
 
     companion object : IGroupIdentifier() {
       override fun screenIdentifier(): ScreenIdentifier = ExperimentalScreen.screenIdentifier()

@@ -428,7 +428,8 @@ Usually that means that you forgot to remove a space from the beginning or the e
     <string name="epoxy_proxy_view_supported_site">Supported sites: %1$s</string>
     <string name="epoxy_proxy_view_supported_actions">Supported actions: %1$s</string>
 
-    <string name="controller_bookmarks_sorting_by_creation_time">Sort by creation time</string>
+    <string name="controller_bookmarks_sorting_by_bookmark_creation_time">Sort by bookmark creation time</string>
+    <string name="controller_bookmarks_sorting_by_thread_id">Sort by thread id</string>
     <string name="controller_bookmarks_sorting_by_unread_replies">Sort by unread replies</string>
     <string name="controller_bookmarks_sorting_by_unread_posts">Sort by unread posts</string>
     <string name="controller_bookmarks_sorting_custom">Custom sort order</string>
@@ -728,6 +729,8 @@ Usually that means that you forgot to remove a space from the beginning or the e
     <string name="setting_images_high_res_description">Make the album view and card catalog images higher resolution by pre-rescaling full size images (⚠ May become the reason of freezes while scrolling catalog/thread/album on old devices ⚠)</string>
     <string name="setting_update_colors_for_text_selection_cursor">Colorize text selection cursors</string>
     <string name="setting_update_colors_for_text_selection_cursor_description">Some devices behave weirdly when text selection cursor colors are changed (for example on some xiaomi devices they become stretched vertically). Disabling this setting will make the text selection cursor use the default theme\'s color (which is gray)</string>
+    <string name="setting_custom_user_agent">Custom user agent</string>
+    <string name="setting_custom_user_agent_description">By default, currently installed WebView\'s user-agent is used for all requests (and for CloudFlare bypass). But it may not work in some situations. So if you experience problems with bypassing CloudFlare try changing this setting. Set it to empty string to use the WebView\'s user agent again.</string>
 
 
     <!-- Behavior general group -->
@@ -824,6 +827,8 @@ Usually that means that you forgot to remove a space from the beginning or the e
     <string name="settings_plugins_mpv_group">Mpv video player</string>
     <string name="settings_plugins_use_mpv">Use mpv video player</string>
     <string name="settings_plugins_use_mpv_description">When turned on mpv video player will be used to play videos instead of the ExoPlayer. When turned off ExoPlayer will be used. You need to install the libraries for it to work.</string>
+    <string name="settings_plugins_use_config_file">Use mpv.conf</string>
+    <string name="settings_plugins_edit_config_file">Edit mpv.conf</string>
     <string name="settings_plugins_libs_status">Mpv libraries status</string>
     <string name="settings_plugins_libs_downloading_libraries">Downloading libraries</string>
     <string name="settings_plugins_libs_installation_failure">Failure</string>
@@ -941,6 +946,7 @@ Usually that means that you forgot to remove a space from the beginning or the e
     <string name="setting_pass_login">Submit</string>
     <string name="setting_pass_logout">Logout</string>
     <string name="setting_pass_error">Connection error</string>
+    <string name="setting_pass_update_reply_mode">Don\'t forget to change the reply mode by long tapping the sent reply button</string>
 
     <string name="setting_posting_limits_info_refresh_success">Passcode info updated</string>
     <string name="setting_posting_limits_info_refresh_failure">Failed to update passcode info</string>
@@ -1338,6 +1344,7 @@ If you ever log out or if the passcode expires you will have to change reply mod
     <string name="controller_local_archive_additional_thread_stats">Posts: %1$d, Media: %2$d, Media on disk: %3$s</string>
     <string name="controller_local_archive_export_threads">Export threads</string>
     <string name="controller_local_archive_export_thread_media">Export thread media</string>
+    <string name="controller_local_archive_exported_format">Exported %1$d / %2$d</string>
 
     <string name="controller_saved_posts_delete_many_posts">Delete %1$d saved post(s)?</string>
     <string name="controller_saved_posts_delete_many_posts_description">This action will delete saved posts and unmark replies as yours in threads. Are you sure you want to do that?</string>
@@ -1492,8 +1499,7 @@ Actual error: \'%1$s\'</string>
 ]]>
     </string>
 
-    <string name="cloud_flare_cookie_setting_title">CloudFlare cookie</string>
-    <string name="cloud_flare_cookie_setting_description">If a site is hosted by CloudFlare and has anti-ddos checks enabled the application will automatically try to pass them and store CloudFlare clearance cookie that will be used to access site normally without having to pass checks every singe time. You will see a cookie here and will be able to edit/remove it if you ever need to do that. When removing a cookie (making it empty) a new cookie will be requested on the next site access. If a site does not use CloudFlare then this setting will always be empty.</string>
+    <string name="cloud_flare_cookie_setting_title">CloudFlare clearance cookie</string>
     <string name="settings_concurrent_file_downloading_name">Concurrent chunked file downloading</string>
     <string name="settings_concurrent_file_downloading_description">Split file downloads into chunks and download them concurrently, when possible; makes loading times shorter when viewing them in the gallery. Determines the number of chunks to split files into.</string>
     <string name="site_domain_setting">Site domain</string>
